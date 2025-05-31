@@ -1,0 +1,31 @@
+
+body {
+  font-family: sans-serif;
+  padding: 2rem;
+  background: #f7f7f7;
+  direction: rtl;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+.controls {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#preview {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: white;
+  border: 2px dashed #ccc;
+  min-height: 100px;
+  font-size: 40px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
