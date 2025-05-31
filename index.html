@@ -1,24 +1,28 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>عارض الخطوط - OpenType + VF</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
   <script src="https://unpkg.com/opentype.js@latest/dist/opentype.min.js"></script>
 </head>
 <body>
   <h1>🖋️ عارض الخطوط</h1>
-  <input type="file" id="font-upload" accept=".otf,.ttf,.woff,.woff2">
+  <input type="file" id="font-upload" accept=".otf,.ttf,.woff,.woff2" />
 
   <div class="controls">
     <label>🔠 حجم الخط: <span id="font-size-label">40</span>px</label>
-    <input type="range" id="font-size" min="10" max="200" value="40">
+    <input type="range" id="font-size" min="10" max="200" value="40" />
   </div>
 
   <div class="controls">
     <label for="sample-text">✍️ النص التجريبي:</label>
-    <input type="text" id="sample-text" value="الخط العربي الجميل">
+    <input
+      type="text"
+      id="sample-text"
+      value="الخط العربي الجميل"
+      placeholder="اكتب نصك هنا..."
+    />
   </div>
 
   <div id="features-box" class="controls">
@@ -28,7 +32,9 @@
 
   <div id="variation-controls" class="controls"></div>
 
-  <div id="preview" contenteditable="true">الخط العربي الجميل</div>
+  <div id="preview" contenteditable="true" spellcheck="false" aria-label="صندوق المعاينة">
+    الخط العربي الجميل
+  </div>
 
   <script src="script.js"></script>
 </body>
