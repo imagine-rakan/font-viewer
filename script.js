@@ -1,7 +1,18 @@
-// --- كود الوضع الليلي ---
+const fontUpload = document.getElementById('font-upload');
+const preview = document.getElementById('preview');
+const sampleText = document.getElementById('sample-text');
+const fontSizeSlider = document.getElementById('font-size');
+const fontSizeLabel = document.getElementById('font-size-label');
+const featuresBox = document.getElementById('features');
+const variationBox = document.getElementById('variation-controls');
 const toggleThemeBtn = document.getElementById('toggle-theme');
 const body = document.body;
 
+let font = null;
+let fontName = '';
+const axesMap = {};
+
+// --- الوضع الليلي ---
 function setTheme(dark) {
   if (dark) {
     body.classList.add('dark');
@@ -19,13 +30,117 @@ toggleThemeBtn.addEventListener('click', () => {
   setTheme(!isDark);
 });
 
-// تفعيل الوضع المحفوظ مسبقًا
-window.onload = () => {
+// تهيئة عند تحميل الصفحة
+window.addEventListener('DOMContentLoaded', () => {
   const savedTheme = localStorage.getItem('theme') || 'light';
   setTheme(savedTheme === 'dark');
-  loadSettings(); // وظيفة موجودة مسبقًا لتحميل الإعدادات الأخرى
-};
+});
 
-// --- باقي كود الخطوط والميزات والمتغيرات ... ---
+fontUpload.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const arrayBuffer = await file.arrayBuffer();
+  font = opentype.parse(arrayBuffer);
+  fontName = 'uploaded-font';
+  const fontFace = new FontFace(fontName, arrayBuffer);
+  await fontFace.load();
+  document.fonts.add(fontFace);
+  preview.style.fontFamily = fontName;
+  loadFeatures();
+  loadVariations();
+  preview.textContent = sampleText.value; // لتحديث النص بعد تحميل الخط
+});
 
-// الكود السابق الموجود في السكريبت.js (خاص بالخطوط وفتح الخط والتحكم في الخصائص)
+sampleText.addEventListener('input', () => {
+  preview.textContent = sampleText.value;
+});
+
+fontSizeSlider.addEventListener('input', () => {
+  const size = fontSizeSlider.value;
+  fontSizeLabel.textContent = size;
+  preview.style.fontSize = size + 'px';
+});
+
+function loadFeatures() {
+  featuresBox.innerHTML = '';
+  const seen = new Set();
+  if (font && font.tables && font.tables.gsub && font.tables.gsub.features) {
+    font.tables.gsub.features.forEach(f => {
+      if (!seen.has(f.tag)) {
+        seen.add(f.tag);
+        const label = document.createElement('label');
+        label.style.marginRight = '10px';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.dataset.tag = f.tag;
+        checkbox.className = 'feature-checkbox';
+        checkbox.addEventListener('change', applyFeatures);
+        label.appendChild(checkbox);
+        label.append(' ' + f.tag);
+        featuresBox.appendChild(label);
+      }
+    });
+  }
+  applyFeatures();
+}
+
+function applyFeatures() {
+  const features = Array.from(document.querySelectorAll('.feature-checkbox:checked'))
+    .map(cb => `"${cb.dataset.tag}" 1`);
+  preview.style.fontFeatureSettings = features.join(', ');
+}
+
+function loadVariations() {
+  variationBox.innerHTML = '';
+  if (font && font.tables.fvar && font.tables.fvar.axes) {
+    const title = document.createElement('h3');
+    title.textContent = '⚙️ تحكم في الخط المتغير';
+    variationBox.appendChild(title);
+
+    font.tables.fvar.axes.forEach(axis => {
+      axesMap[axis.tag] = axis.defaultValue;
+
+      const wrapper = document.createElement('div');
+      wrapper.style.marginBottom = '12px';
+
+      const label = document.createElement('label');
+      label.textContent = `${axis.name.en} (${axis.tag}): `;
+      label.htmlFor = 'axis-' + axis.tag;
+
+      const input = document.createElement('input');
+      input.type = 'range';
+      input.id = 'axis-' + axis.tag;
+      input.min = axis.minValue;
+      input.max = axis.maxValue;
+      input.value = axis.defaultValue;
+      input.step = 0.01;
+      input.style.width = '200px';
+
+      const valSpan = document.createElement('span');
+      valSpan.textContent = axis.defaultValue.toFixed(2);
+      valSpan.style.marginLeft = '8px';
+
+      input.addEventListener('input', () => {
+        axesMap[axis.tag] = parseFloat(input.value);
+        valSpan.textContent = input.value;
+        applyVariations();
+      });
+
+      wrapper.appendChild(label);
+      wrapper.appendChild(input);
+      wrapper.appendChild(valSpan);
+      variationBox.appendChild(wrapper);
+    });
+
+    applyVariations();
+  }
+}
+
+function applyVariations() {
+  if (!fontName) return;
+
+  const vars = Object.entries(axesMap)
+    .map(([tag, val]) => `"${tag}" ${val}`)
+    .join(', ');
+  preview.style.fontVariationSettings = vars;
+}
