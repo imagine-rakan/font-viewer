@@ -19,16 +19,27 @@
     <input type="range" id="font-size" min="10" max="200" value="40" />
   </div>
 
+  <div class="controls">
+    <label for="sample-text">✍️ النص التجريبي:</label>
+    <input
+      type="text"
+      id="sample-text"
+      value="الخط العربي الجميل"
+      placeholder="اكتب نصك هنا..."
+    />
+  </div>
+
   <div id="features-box" class="controls">
     <h3>🎛️ ميزات OpenType</h3>
     <div id="features"></div>
   </div>
 
   <div id="variation-controls" class="controls"></div>
-  <button id="downloadPng" class="download-btn">تحميل كـ PNG</button>
+
   <div id="preview" contenteditable="true" spellcheck="false" aria-label="صندوق المعاينة">
+  <button id="downloadPng" class="download-btn">تحميل كـ PNG</button>
+
     الخط العربي الجميل
-    
   </div>
 
   <script src="script.js"></script>
