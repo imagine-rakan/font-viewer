@@ -148,3 +148,6 @@ input[type='range'] {
   font-size: 1rem;
 }
 
+.download-btn:hover {
+  background-color: #0056b3;
+}
