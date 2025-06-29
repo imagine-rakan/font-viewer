@@ -151,3 +151,17 @@ input[type='range'] {
 .download-btn:hover {
   background-color: #0056b3;
 }
+
+.controls {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(100%) !important;
+  white-space: nowrap !important;
+}
+
