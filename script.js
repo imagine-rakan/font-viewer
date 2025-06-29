@@ -136,18 +136,17 @@ function loadVariations() {
   }
 }
 
-function applyVariations() {
-  if (!fontName) return;
-
-  const vars = Object.entries(axesMap)
-    .map(([tag, val]) => `"${tag}" ${val}`)
-    .join(', ');
-  preview.style.fontVariationSettings = vars;
-}
-
 const downloadBtn = document.getElementById('downloadPng');
 
-downloadBtn.addEventListener('click', () => {
+downloadBtn.addEventListener('click', async () => {
+  if (!fontName) {
+    alert('يرجى تحميل الخط أولاً');
+    return;
+  }
+
+  // ننتظر حتى يتم تحميل الخط بالكامل
+  await document.fonts.ready;
+
   const text = preview.textContent;
   const comp = window.getComputedStyle(preview);
   const font = `${comp.fontStyle} ${comp.fontWeight} ${comp.fontSize} ${comp.fontFamily}`;
@@ -173,7 +172,6 @@ downloadBtn.addEventListener('click', () => {
   ctx.textBaseline = 'top';
   ctx.fillText(text, padding, padding);
 
-  // إنشاء رابط تحميل الصورة
   const link = document.createElement('a');
   link.download = 'preview.png';
   link.href = canvas.toDataURL('image/png');
