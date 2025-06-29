@@ -136,7 +136,14 @@ function loadVariations() {
   }
 }
 
-const downloadBtn = document.getElementById('downloadPng');
+function applyVariations() {
+  if (!fontName) return;
+
+  const vars = Object.entries(axesMap)
+    .map(([tag, val]) => `"${tag}" ${val}`)
+    .join(', ');
+  preview.style.fontVariationSettings = vars;
+}
 
 const downloadBtn = document.getElementById('downloadPng');
 
@@ -179,5 +186,3 @@ downloadBtn.addEventListener('click', async () => {
   link.href = canvas.toDataURL('image/png');
   link.click();
 });
-
-
