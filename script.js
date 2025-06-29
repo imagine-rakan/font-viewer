@@ -151,10 +151,7 @@ downloadBtn.addEventListener('click', async () => {
   const color = comp.color;
   const bg = comp.backgroundColor || '#ffffff';
 
-  // نص المعاينة (يدعم الأسطر المتعددة)
-  const text = preview.textContent;
-  const lines = text.split('\n');
-
+  
   const padding = 20;
   const scale = 2; // التكبير لتحسين الجودة
 
@@ -170,9 +167,7 @@ downloadBtn.addEventListener('click', async () => {
     if (metrics.width > maxWidth) maxWidth = metrics.width;
   });
 
-  // ارتفاع السطر (يمكن تحسينه، هكذا تقريباً)
-  const fontSizePx = parseInt(comp.fontSize);
-  const lineHeight = fontSizePx * 1.2;
+
 
   // إعداد أبعاد الـ canvas مضاعفة للتحسين
   const canvasWidth = (maxWidth + padding * 2) * scale;
@@ -194,10 +189,6 @@ downloadBtn.addEventListener('click', async () => {
   ctx.font = font;
   ctx.textBaseline = 'top';
 
-  // رسم كل سطر مع التباعد
-  lines.forEach((line, i) => {
-    ctx.fillText(line, padding, padding + i * lineHeight);
-  });
 
   // تحميل الصورة
   const link = document.createElement('a');
