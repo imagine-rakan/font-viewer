@@ -152,7 +152,7 @@ input[type='range'] {
   background-color: #0056b3;
 }
 
-.controls {
+#sample-text {
   position: absolute !important;
   width: 1px !important;
   height: 1px !important;
