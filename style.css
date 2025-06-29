@@ -165,3 +165,12 @@ input[type='range'] {
   white-space: nowrap !important;
 }
 
+.controls {
+  position: fixed !important; /* نخرج العنصر من التدفق */
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important; /* يمنع التفاعل معه */
+}
+
