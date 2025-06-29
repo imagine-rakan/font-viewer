@@ -152,14 +152,5 @@ input[type='range'] {
   background-color: #0056b3;
 }
 
-#sample-text {
-  position: absolute !important;
-  width: 0 !important;
-  height: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border: none !important;
-  overflow: hidden !important;
-  opacity: 0 !important;
-}
+
 
