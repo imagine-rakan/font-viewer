@@ -144,36 +144,65 @@ downloadBtn.addEventListener('click', async () => {
     return;
   }
 
-  // ننتظر حتى يتم تحميل الخط بالكامل
   await document.fonts.ready;
 
-  const text = preview.textContent;
   const comp = window.getComputedStyle(preview);
   const font = `${comp.fontStyle} ${comp.fontWeight} ${comp.fontSize} ${comp.fontFamily}`;
   const color = comp.color;
   const bg = comp.backgroundColor || '#ffffff';
 
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  // نص المعاينة (يدعم الأسطر المتعددة)
+  const text = preview.textContent;
+  const lines = text.split('\n');
+
   const padding = 20;
+  const scale = 2; // التكبير لتحسين الجودة
 
-  ctx.font = font;
-  const metrics = ctx.measureText(text);
-  const textWidth = metrics.width;
-  const textHeight = parseInt(comp.fontSize);
+  // أنشئ canvas مؤقت لحساب حجم النص
+  const tmpCanvas = document.createElement('canvas');
+  const tmpCtx = tmpCanvas.getContext('2d');
+  tmpCtx.font = font;
 
-  canvas.width = textWidth + padding * 2;
-  canvas.height = textHeight + padding * 2;
+  // حساب العرض الأعظم للطول (العرض)
+  let maxWidth = 0;
+  lines.forEach(line => {
+    const metrics = tmpCtx.measureText(line);
+    if (metrics.width > maxWidth) maxWidth = metrics.width;
+  });
 
+  // ارتفاع السطر (يمكن تحسينه، هكذا تقريباً)
+  const fontSizePx = parseInt(comp.fontSize);
+  const lineHeight = fontSizePx * 1.2;
+
+  // إعداد أبعاد الـ canvas مضاعفة للتحسين
+  const canvasWidth = (maxWidth + padding * 2) * scale;
+  const canvasHeight = (lineHeight * lines.length + padding * 2) * scale;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(scale, scale); // نضبط مقياس الرسم للتكبير
+
+  // الخلفية
   ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, canvasWidth / scale, canvasHeight / scale);
+
+  // إعدادات النص
   ctx.fillStyle = color;
   ctx.font = font;
   ctx.textBaseline = 'top';
-  ctx.fillText(text, padding, padding);
 
+  // رسم كل سطر مع التباعد
+  lines.forEach((line, i) => {
+    ctx.fillText(line, padding, padding + i * lineHeight);
+  });
+
+  // تحميل الصورة
   const link = document.createElement('a');
   link.download = 'preview.png';
   link.href = canvas.toDataURL('image/png');
   link.click();
 });
+
