@@ -148,63 +148,82 @@ function applyVariations() {
 const downloadBtn = document.getElementById('downloadPng');
 
 downloadBtn.addEventListener('click', async () => {
-  if (!fontName) {
-    alert('يرجى تحميل الخط أولاً');
+  if (!font) {
+    alert("يرجى رفع الخط أولاً");
     return;
   }
 
   await document.fonts.ready;
 
-  const comp = window.getComputedStyle(preview);
-  const font = `${comp.fontStyle} ${comp.fontWeight} ${comp.fontSize} ${comp.fontFamily}`;
-  const color = comp.color;
-  const bg = comp.backgroundColor || '#ffffff';
+  const comp = getComputedStyle(preview);
+  const textLines = preview.textContent.split('\n');
+  const fontSize = comp.fontSize;
+  const fontColor = comp.color;
+  const bgColor = comp.backgroundColor || '#fff';
+  const fontFeatures = preview.style.fontFeatureSettings || 'normal';
 
-  const text = preview.textContent;
-  const lines = text.split('\n');
+  const svgWidth = 1200;
+  const lineHeight = parseFloat(fontSize) * 1.6;
+  const svgHeight = lineHeight * textLines.length + 100;
 
-  const padding = 40;
-  const scale = 2; // لتحسين جودة الصورة
+  const file = fontUpload.files[0];
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const base64Font = e.target.result.split(',')[1];
 
-  // إنشاء canvas مؤقت لحساب المقاسات
-  const tmpCanvas = document.createElement('canvas');
-  const tmpCtx = tmpCanvas.getContext('2d');
-  tmpCtx.font = font;
+    // نحسب بداية y لجعل النص في منتصف الصورة عموديًا
+    const totalTextHeight = lineHeight * textLines.length;
+    const startY = (svgHeight - totalTextHeight) / 2 + lineHeight / 2;
 
-  // حساب أكبر عرض لأي سطر
-  let maxWidth = 0;
-  lines.forEach(line => {
-    const metrics = tmpCtx.measureText(line);
-    if (metrics.width > maxWidth) maxWidth = metrics.width;
-  });
+    const textElements = textLines.map((line, i) => {
+      // y لكل سطر بناء على startY
+      const y = startY + i * lineHeight;
+      const safeLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      // نضيف dominant-baseline="middle" لتوسيط النص عموديًا حول y
+      return `<text x="50%" y="${y}" text-anchor="middle" dominant-baseline="middle">${safeLine}</text>`;
+    }).join('\n');
 
-  const fontSizePx = parseFloat(comp.fontSize); // حجم الخط بالبكسل
-  const lineHeight = fontSizePx * 1.4; // مسافة بين الأسطر
+    const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}">
+  <defs>
+    <style type="text/css">
+      @font-face {
+        font-family: '${fontName}';
+        src: url(data:font/ttf;base64,${base64Font}) format('truetype');
+      }
+      text {
+        font-family: '${fontName}';
+        font-size: ${fontSize};
+        fill: ${fontColor};
+        font-feature-settings: ${fontFeatures};
+        white-space: pre;
+      }
+    </style>
+  </defs>
+  <rect width="100%" height="100%" fill="${bgColor}" />
+  ${textElements}
+</svg>`;
 
-  // إعداد الحجم حسب الخط
-  const canvasWidth = (maxWidth + padding * 2) * scale;
-  const canvasHeight = (lineHeight * lines.length + padding * 2) * scale;
+    const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
 
-  const canvas = document.createElement('canvas');
-  canvas.width = canvasWidth;
-  canvas.height = canvasHeight;
+    const img = new Image();
+    img.onload = function () {
+      const canvas = document.createElement('canvas');
+      canvas.width = svgWidth * 2;
+      canvas.height = svgHeight * 2;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(2, 2);
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
 
-  const ctx = canvas.getContext('2d');
-  ctx.scale(scale, scale);
+      const link = document.createElement('a');
+      link.download = 'preview.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    };
+    img.src = url;
+  };
 
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, canvasWidth / scale, canvasHeight / scale);
-
-  ctx.font = font;
-  ctx.fillStyle = color;
-  ctx.textBaseline = 'top';
-
-  lines.forEach((line, i) => {
-    ctx.fillText(line, padding, padding + i * lineHeight + fontSizePx * 0.2);
-  });
-
-  const link = document.createElement('a');
-  link.download = 'preview.png';
-  link.href = canvas.toDataURL('image/png');
-  link.click();
+  reader.readAsDataURL(file);
 });
