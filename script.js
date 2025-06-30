@@ -153,33 +153,55 @@ downloadBtn.addEventListener('click', async () => {
     return;
   }
 
-  // ننتظر حتى يتم تحميل الخط بالكامل
   await document.fonts.ready;
 
-  const text = preview.textContent;
   const comp = window.getComputedStyle(preview);
   const font = `${comp.fontStyle} ${comp.fontWeight} ${comp.fontSize} ${comp.fontFamily}`;
   const color = comp.color;
   const bg = comp.backgroundColor || '#ffffff';
 
+  const text = preview.textContent;
+  const lines = text.split('\n');
+
+  const padding = 40;
+  const scale = 2; // لتحسين جودة الصورة
+
+  // إنشاء canvas مؤقت لحساب المقاسات
+  const tmpCanvas = document.createElement('canvas');
+  const tmpCtx = tmpCanvas.getContext('2d');
+  tmpCtx.font = font;
+
+  // حساب أكبر عرض لأي سطر
+  let maxWidth = 0;
+  lines.forEach(line => {
+    const metrics = tmpCtx.measureText(line);
+    if (metrics.width > maxWidth) maxWidth = metrics.width;
+  });
+
+  const fontSizePx = parseFloat(comp.fontSize); // حجم الخط بالبكسل
+  const lineHeight = fontSizePx * 1.4; // مسافة بين الأسطر
+
+  // إعداد الحجم حسب الخط
+  const canvasWidth = (maxWidth + padding * 2) * scale;
+  const canvasHeight = (lineHeight * lines.length + padding * 2) * scale;
+
   const canvas = document.createElement('canvas');
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+
   const ctx = canvas.getContext('2d');
-  const padding = 20;
-
-  ctx.font = font;
-  const metrics = ctx.measureText(text);
-  const textWidth = metrics.width;
-  const textHeight = parseInt(comp.fontSize);
-
-  canvas.width = textWidth + padding * 2;
-  canvas.height = textHeight + padding * 2;
+  ctx.scale(scale, scale);
 
   ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, canvasWidth / scale, canvasHeight / scale);
+
   ctx.font = font;
+  ctx.fillStyle = color;
   ctx.textBaseline = 'top';
-  ctx.fillText(text, padding, padding);
+
+  lines.forEach((line, i) => {
+    ctx.fillText(line, padding, padding + i * lineHeight + fontSizePx * 0.2);
+  });
 
   const link = document.createElement('a');
   link.download = 'preview.png';
