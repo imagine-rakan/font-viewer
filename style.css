@@ -138,7 +138,7 @@ input[type='range'] {
   transition: color var(--transition-speed);
 }
 
-.download-btn {
+#downloadPng {
   margin-top: 0.5rem;
   padding: 0.5rem 1rem;
   background-color: #007bff;
@@ -149,7 +149,7 @@ input[type='range'] {
   font-size: 1rem;
 }
 
-.download-btn:hover {
+#downloadPng:hover {
   background-color: #0056b3;
 }
 
