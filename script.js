@@ -8,6 +8,10 @@ const variationBox = document.getElementById('variation-controls');
 const toggleThemeBtn = document.getElementById('toggle-theme');
 const body = document.body;
 
+const textColorPicker = document.getElementById('text-color');
+const bgColorPicker = document.getElementById('bg-color');
+const transparentBgCheckbox = document.getElementById('transparent-bg');
+
 let font = null;
 let fontName = '';
 const axesMap = {};
@@ -16,11 +20,11 @@ const axesMap = {};
 function setTheme(dark) {
   if (dark) {
     body.classList.add('dark');
-    toggleThemeBtn.textContent = '☀️'; // أيقونة شمس
+    toggleThemeBtn.textContent = '☀️';
     localStorage.setItem('theme', 'dark');
   } else {
     body.classList.remove('dark');
-    toggleThemeBtn.textContent = '🌙'; // أيقونة قمر
+    toggleThemeBtn.textContent = '🌙';
     localStorage.setItem('theme', 'light');
   }
 }
@@ -30,7 +34,6 @@ toggleThemeBtn.addEventListener('click', () => {
   setTheme(!isDark);
 });
 
-// تهيئة عند تحميل الصفحة
 window.addEventListener('DOMContentLoaded', () => {
   const savedTheme = localStorage.getItem('theme') || 'light';
   setTheme(savedTheme === 'dark');
@@ -48,7 +51,7 @@ fontUpload.addEventListener('change', async (e) => {
   preview.style.fontFamily = fontName;
   loadFeatures();
   loadVariations();
-  preview.textContent = sampleText.value; // لتحديث النص بعد تحميل الخط
+  preview.textContent = sampleText.value;
 });
 
 sampleText.addEventListener('input', () => {
@@ -158,8 +161,9 @@ downloadBtn.addEventListener('click', async () => {
   const comp = getComputedStyle(preview);
   const textLines = preview.textContent.split('\n');
   const fontSize = comp.fontSize;
-  const fontColor = comp.color;
-  const bgColor = comp.backgroundColor || '#fff';
+  const fontColor = textColorPicker.value || '#ffffff';
+  const useTransparent = transparentBgCheckbox.checked;
+  const bgColor = useTransparent ? 'none' : (bgColorPicker.value || '#000000');
   const fontFeatures = preview.style.fontFeatureSettings || 'normal';
 
   const svgWidth = 1200;
@@ -171,15 +175,12 @@ downloadBtn.addEventListener('click', async () => {
   reader.onload = function (e) {
     const base64Font = e.target.result.split(',')[1];
 
-    // نحسب بداية y لجعل النص في منتصف الصورة عموديًا
     const totalTextHeight = lineHeight * textLines.length;
     const startY = (svgHeight - totalTextHeight) / 2 + lineHeight / 2;
 
     const textElements = textLines.map((line, i) => {
-      // y لكل سطر بناء على startY
       const y = startY + i * lineHeight;
       const safeLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      // نضيف dominant-baseline="middle" لتوسيط النص عموديًا حول y
       return `<text x="50%" y="${y}" text-anchor="middle" dominant-baseline="middle">${safeLine}</text>`;
     }).join('\n');
 
@@ -200,7 +201,7 @@ downloadBtn.addEventListener('click', async () => {
       }
     </style>
   </defs>
-  <rect width="100%" height="100%" fill="${bgColor}" />
+  ${useTransparent ? '' : `<rect width="100%" height="100%" fill="${bgColor}" />`}
   ${textElements}
 </svg>`;
 
